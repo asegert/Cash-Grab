@@ -2,8 +2,6 @@ var Cash = Cash || {};
 
 Cash.BootState = {
   init: function() {
-    //Begins audio
-    this._manageAudio('init', this);
     //loading screen will have a white background
     this.game.stage.backgroundColor = '#fff';
 
@@ -19,25 +17,5 @@ Cash.BootState = {
   },
   create: function() {
     this.state.start('Preload');
-  },
-   _manageAudio: function(mode, game) 
-    {
-		if(mode == 'init') 
-        {
-			Cash._audioStatus = true;
-			Cash._soundClick = game.add.audio('audio-click');
-		}
-		else if(mode == 'switch') 
-        {
-			Cash._audioStatus = !Cash._audioStatus;
-		}
-		if(Cash._audioStatus) 
-        {
-			Cash._audioOffset = 0;
-		}
-		else 
-        {
-			Cash._audioOffset = 4;
-		}
-	}
+  }
 };

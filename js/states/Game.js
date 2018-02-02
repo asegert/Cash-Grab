@@ -28,66 +28,14 @@ Cash.GameState = {
     this.score=0;
     //Boolean for if initial cash is created
     this.cashcreate = false;
+    //Boolean for game is over early
+    this.ended = false;
   },
   create: function()
   {   
       //Timer so each level lasts 30s
-      this.timer = this.time.events.add(Phaser.Timer.SECOND * 36, function()
-      {
-          this.cash1 = this.add.sprite(100, 300, 'cash5');
-          this.cash2 = this.add.sprite(200, 400, 'cash1');
-          this.cash3 = this.add.sprite(300, 500, 'cash4');
-          this.cash4 = this.add.sprite(400, 600, 'cash2');
-          this.cash5 = this.add.sprite(500, 700, 'cash3');
-          //When time is up send the 'cyclone' to collect all remaining money
-          this.cycloneAnimation = this.add.sprite(-300, 100, 'cyclone');
-          this.cycloneAnimation.scale.setTo(2, 2);
-          this.cycloneAnimation.animations.add('spin');
-          this.cycloneAnimation.animations.play('spin', 30, true);
-          var cyTween = this.add.tween(this.cycloneAnimation).to({x: 500, y: 100}, 3000);
-          cyTween.start();
-          //Remove the money so more cannot be collected
-          this.money.destroy();
-          cyTween.onComplete.add(function()
-          {
-              //Remove timer and score displays
-              this.timeText.destroy(); 
-              this.scoreText.destroy();
-              //Set the ending background
-              this.background = this.add.sprite(0, 0, 'endScreen');
-              
-              var style = {
-                  fill: '#ffffff',
-                  font: '96px Arial',
-                  stroke: '#ffffff',
-                  strokeThickness: 5
-              };
-              //Display the score on the screen
-              this.scoreText = this.add.text(300, 450, "$"+this.score, style);
-              this.scoreText.anchor.setTo(0.5, 0.5);
-              //Cash Emitter
-              this.emitter = this.add.emitter(320, 470, 100);
-              this.emitter.makeParticles(['cash1', 'cash5']);
-              this.emitter.minParticleScale = 0.25;
-              this.emitter.maxParticleScale = 0.25;
-              this.emitter.start(false, 6000, 100);
-              //If this was not the last level offer a play again button
-              if(this.level!=this.cyclone.length)
-              {
-                this.playAgain = this.add.sprite(400, 800, 'playAgainButton');
-                this.playAgain.width=200;
-                this.playAgain.height=100;
-    
-                this.playAgain.inputEnabled = true;
-                this.playAgain.events.onInputDown.add(function()
-                {
-                    //Reset the global level and restart
-                    Cash.level = this.level + 1;
-                    this.state.restart();
-                }, this); 
-              }
-          }, this);
-      }, this);
+      this.timer = this.time.events.add(Phaser.Timer.SECOND * 36, this.timeUp
+      , this);
       //Set initial text
       var style = {
                   fill: '#55bb55',
@@ -163,6 +111,13 @@ Cash.GameState = {
           //Update the timer display
           this.timeText.setText("Time Left: 30");
           this.countDown.setText((Math.floor((this.time.events.duration/1000))-30));
+      }
+      
+      if(!this.ended && this.money.children.length==0 && Math.floor((this.time.events.duration/1000))<25 && Math.floor((this.time.events.duration/1000))>0)
+      {
+          this.time.events.remove(this.timer);
+          this.timeUp();
+          this.ended = true;
       }
   },
   //Create new cash until the maximum to create has been reached
@@ -249,5 +204,61 @@ Cash.GameState = {
           this.cashValue = this.cyclone[this.level-1][5];
           return 'cash5';
       }
-  }
+  },
+  timeUp: function()
+      {
+          this.cash1 = this.add.sprite(100, 300, 'cash5');
+          this.cash2 = this.add.sprite(200, 400, 'cash1');
+          this.cash3 = this.add.sprite(300, 500, 'cash4');
+          this.cash4 = this.add.sprite(400, 600, 'cash2');
+          this.cash5 = this.add.sprite(500, 700, 'cash3');
+          //When time is up send the 'cyclone' to collect all remaining money
+          this.cycloneAnimation = this.add.sprite(-300, 100, 'cyclone');
+          this.cycloneAnimation.scale.setTo(2, 2);
+          this.cycloneAnimation.animations.add('spin');
+          this.cycloneAnimation.animations.play('spin', 30, true);
+          var cyTween = this.add.tween(this.cycloneAnimation).to({x: 500, y: 100}, 3000);
+          cyTween.start();
+          //Remove the money so more cannot be collected
+          this.money.destroy();
+          cyTween.onComplete.add(function()
+          {
+              //Remove timer and score displays
+              this.timeText.destroy(); 
+              this.scoreText.destroy();
+              //Set the ending background
+              this.background = this.add.sprite(0, 0, 'endScreen');
+              
+              var style = {
+                  fill: '#ffffff',
+                  font: '96px Arial',
+                  stroke: '#ffffff',
+                  strokeThickness: 5
+              };
+              //Display the score on the screen
+              this.scoreText = this.add.text(300, 450, "$"+this.score, style);
+              this.scoreText.anchor.setTo(0.5, 0.5);
+              //Cash Emitter
+              this.emitter = this.add.emitter(320, 470, 100);
+              this.emitter.makeParticles(['cash1', 'cash5']);
+              this.emitter.minParticleScale = 0.25;
+              this.emitter.maxParticleScale = 0.25;
+              this.emitter.start(false, 6000, 100);
+              //If this was not the last level offer a play again button
+              if(this.level!=this.cyclone.length)
+              {
+                this.playAgain = this.add.sprite(400, 800, 'playAgainButton');
+                this.playAgain.width=200;
+                this.playAgain.height=100;
+    
+                this.playAgain.inputEnabled = true;
+                this.playAgain.events.onInputDown.add(function()
+                {
+                    //Reset the global level and restart
+                    Cash.level = this.level + 1;
+                    this.state.restart();
+                }, this); 
+              }
+          }, this);
+      }
 };
